@@ -6,6 +6,12 @@ authors = ["Jason Yan <tailofthesun@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
+mimesis = "^4.0.0"
+click = "^7.1.2"
+tqdm = "^4.46.0"
+orjson = "^3.0.2"
+python-rapidjson = "^0.9.1"
+ujson = "^2.0.3"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
