@@ -12,10 +12,10 @@ from mimesis.schema import (
 )
 
 JSON_SERIALIZERS = {
-    'json': json,
-    'orjson': orjson,
-    'rapidjson': rapidjson,
-    'ujson': ujson,
+    'json': lambda obj: json.dumps(obj,  separators=(',', ':')),
+    'orjson': lambda obj: orjson.dumps(obj).decode('utf-8'),
+    'rapidjson': rapidjson.dumps,
+    'ujson': ujson.dumps,
 }
 
 _ = Field('en', seed=42)
@@ -42,18 +42,17 @@ class Simple1Benchmark:
 @click.command()
 @click.option('--json-serializer', type=click.Choice(JSON_SERIALIZERS.keys()), default='json')
 def main(json_serializer):
+    print('Using JSON library for serialization:', json_serializer)
+
     benchmark = Simple1Benchmark
     schema = Schema(schema=benchmark.schema)
     json_serializer = JSON_SERIALIZERS[json_serializer]
 
     start_time = time.time()
 
-    print('Using JSON library for serialization:', json_serializer.__name__)
-
-    # for line in schema.create(iterations=benchmark.iterations)
     for _ in tqdm.trange(benchmark.iterations):
         line = schema.create(iterations=1)
-        json_serializer.dumps(line)
+        json_serializer(line)
 
     print('Time taken: %.2fs (%.2f lines/sec)' % (
         time.time() - start_time,
