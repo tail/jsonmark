@@ -153,16 +153,30 @@ def main(benchmark, serializer, cache_dir, only_serialize, deserializer_cmd):
     def run_deserialize_benchmark():
         start_time = time.time()
         cmd = deserializer_cmd.replace('$BENCHMARK', benchmark).replace('$FILENAME', serialized_filename)
-        proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
-        count = 0
-        with tqdm.tqdm(total=benchmark_cls.iterations) as progress:
-            while True:
-                buf = proc.stdout.read(4096)
-                if not buf:
-                    break
 
-                count += buf.count(b'\n')
-                progress.update(buf.count(b'\n'))
+        proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.DEVNULL)
+        count = 0
+
+        while True:
+            if proc.poll() is not None:
+                count += 1
+                break
+
+        # XXX: this is really slow for stdout from rust/java/c++... but no
+        # impact on python.  something to do with buffering.  for now, not
+        # handling stdout.
+        #
+        # proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+        # count = 0
+        # with tqdm.tqdm(total=benchmark_cls.iterations) as progress:
+        #     while True:
+        #         buf = proc.stdout.read(4096)
+
+        #         count += buf.count(b'\n')
+        #         progress.update(buf.count(b'\n'))
+
+        #         if proc.poll() is not None:
+        #             break
 
         if count != benchmark_cls.iterations:
             log.error('Expected %d lines, only got back %d', benchmark_cls.iterations, count)
