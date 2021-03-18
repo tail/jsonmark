@@ -11,7 +11,6 @@ int main(int argc, char **argv) {
 
     // XXX: Slightly slower version going line by line manually instead of
     // using `load_many`.
-    /*
     FILE *stream;
 
     stream = fopen(argv[2], "r");
@@ -31,12 +30,11 @@ int main(int argc, char **argv) {
 
     free(line);
     fclose(stream);
-    */
 
-    simdjson::dom::parser parser;
-    for (simdjson::dom::element doc : parser.load_many(argv[2])) {
-        std::cout << doc["integer_1"] << std::endl;
-    }
+    /* simdjson::dom::parser parser; */
+    /* for (simdjson::dom::element doc : parser.load_many(argv[2])) { */
+    /*     std::cout << doc["integer_1"] << std::endl; */
+    /* } */
 
     return 0;
 }

@@ -7,5 +7,6 @@ import simdjson
 import ujson
 
 for line in open(sys.argv[2], 'rb'):
-    data = orjson.loads(line)
-    print(data['integer_1'])
+    pass
+    # data = orjson.loads(line)
+    # print(data['integer_1'])

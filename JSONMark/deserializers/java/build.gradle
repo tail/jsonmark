@@ -28,6 +28,8 @@ dependencies {
 
     implementation 'com.alibaba:fastjson:1.2.70'
 
+    implementation 'io.vertx:vertx-core:3.9.1'
+
     // Use TestNG framework, also requires calling test.useTestNG() below
     testImplementation 'org.testng:testng:7.1.1'
 }

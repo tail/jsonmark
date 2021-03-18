@@ -184,7 +184,7 @@ def main(benchmark, serializer, cache_dir, only_serialize, deserializer_cmd):
         log.info(
             'Deserialize time taken: %.2fs (%.2f lines/sec)',
             time.time() - start_time,
-            benchmark_cls.iterations / (time.time() - start_time),
+            10 * benchmark_cls.iterations / (time.time() - start_time),
         )
 
     setup_logging()
