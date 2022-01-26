@@ -5,17 +5,16 @@ import os
 import subprocess
 import tempfile
 import time
-from typing import Dict
 
 import click
 import orjson
 import rapidjson
 import tqdm
 import ujson
-from mimesis.schema import (
-    Field,
-    Schema,
-)
+from mimesis.schema import Schema
+from rich.console import Console
+
+from jsonmark.benchmarks import ALL_BENCHMARKS
 
 SERIALIZERS = {
     'json': lambda obj: json.dumps(obj, separators=(',', ':')),
@@ -24,60 +23,9 @@ SERIALIZERS = {
     'ujson': ujson.dumps,
 }
 
-_ = Field('en', seed=42)
-
 log = logging.getLogger(__name__)
 
-
-class BenchmarkMeta(type):
-    REQUIRED_KEYS = {
-        'version',
-        'iterations',
-        'schema',
-    }
-
-    def __new__(cls, name, bases, dct):
-        new_cls = super().__new__(cls, name, bases, dct)
-
-        if name != 'BaseBenchmark':
-            for key in cls.REQUIRED_KEYS:
-                if key not in dct:
-                    raise NotImplementedError(f'Benchmark missing key: {key}')
-
-            ALL_BENCHMARKS[name] = new_cls
-        return new_cls
-
-
-class BaseBenchmark(metaclass=BenchmarkMeta):
-    # XXX: this is so auto-completion works
-    version = None
-    iteration = None
-    schema = None
-
-    @classmethod
-    def cache_filename(cls, serializer):
-        return f'{cls.__name__}.{cls.version}.{serializer}'
-
-
-ALL_BENCHMARKS: Dict[str, BaseBenchmark] = {}
-
-
-class Simple1Benchmark(BaseBenchmark):
-    version = 1
-    seed = 42
-    iterations = 1_000_000
-    schema = lambda: {
-        'integer_1': _('numbers.integer_number'),
-        'integer_2': _('numbers.integer_number'),
-        'float_1': _('numbers.float_number'),
-        'float_2': _('numbers.float_number'),
-        'bool': _('development.boolean'),
-        'words': _('text.words'),
-        'str': _('text.sentence'),
-        'datetime': _('datetime.formatted_datetime', fmt='%Y-%m-%dT%H:%M:%S %Z'),
-        'coordinates': _('address.coordinates'),
-        'null': None,
-    }
+console = Console()
 
 
 @click.command()
@@ -154,13 +102,16 @@ def main(benchmark, serializer, cache_dir, only_serialize, deserializer_cmd):
         start_time = time.time()
         cmd = deserializer_cmd.replace('$BENCHMARK', benchmark).replace('$FILENAME', serialized_filename)
 
-        proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.DEVNULL)
-        count = 0
+        proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
 
-        while True:
-            if proc.poll() is not None:
-                count += 1
-                break
+        checksum = 0
+        with console.status("") as status:
+            while True:
+                status.update(status="%.2fs" % (time.time() - start_time))
+                if proc.poll() is not None:
+                    if proc.stdout:
+                        checksum  = int(proc.stdout.read().strip())
+                    break
 
         # XXX: this is really slow for stdout from rust/java/c++... but no
         # impact on python.  something to do with buffering.  for now, not
@@ -178,8 +129,8 @@ def main(benchmark, serializer, cache_dir, only_serialize, deserializer_cmd):
         #         if proc.poll() is not None:
         #             break
 
-        if count != benchmark_cls.iterations:
-            log.error('Expected %d lines, only got back %d', benchmark_cls.iterations, count)
+        if checksum != benchmark_cls.expected_checksum:
+            log.error('Expected checksum %d but got back %d', benchmark_cls.expected_checksum, checksum)
 
         log.info(
             'Deserialize time taken: %.2fs (%.2f lines/sec)',

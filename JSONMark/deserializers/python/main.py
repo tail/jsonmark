@@ -6,7 +6,31 @@ import rapidjson
 import simdjson
 import ujson
 
-for line in open(sys.argv[2], 'rb'):
-    pass
-    # data = orjson.loads(line)
-    # print(data['integer_1'])
+DESERIALIZERS = {
+    'json': lambda obj: json.loads(obj),
+    'orjson': lambda obj: orjson.loads(obj),
+    'rapidjson': rapidjson.loads,
+    'simdjson': simdjson.loads,  # type: ignore
+    'ujson': ujson.loads,
+}
+
+
+def main():
+    serializer = sys.argv[1]
+    benchmark = sys.argv[2]
+    filename = sys.argv[3]
+
+    if serializer not in DESERIALIZERS:
+        print(f"Unknown serializer: {serializer}")
+        sys.exit(1)
+
+    loads = DESERIALIZERS[serializer]
+
+    checksum = 1
+    for line in open(filename, 'rb'):
+        data = loads(line)
+        checksum += data['integer_1'] + data['integer_2']
+    print(checksum)
+
+if __name__ == "__main__":
+    main()
