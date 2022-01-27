@@ -36,6 +36,24 @@ cpp-dom-load-many: ./deserializers/cpp/build/main
 cpp-ondemand-load: ./deserializers/cpp/build/main
 	jsonmark --cache-dir cache --benchmark Simple1Benchmark './deserializers/cpp/build/main ondemand_load $$FILENAME'
 
+./deserializers/go/main: ./deserializers/go/main.go
+	cd deserializers/go && go build -o main
+
+go-unstructured-json: ./deserializers/go/main
+	jsonmark --cache-dir cache --benchmark Simple1Benchmark './deserializers/go/main UnstructuredJSON $$FILENAME'
+
+go-structured-json: ./deserializers/go/main
+	jsonmark --cache-dir cache --benchmark Simple1Benchmark './deserializers/go/main StructuredJSON $$FILENAME'
+
+go-unstructured-siojson: ./deserializers/go/main
+	jsonmark --cache-dir cache --benchmark Simple1Benchmark './deserializers/go/main UnstructuredSIOJSON $$FILENAME'
+
+go-structured-siojson: ./deserializers/go/main
+	jsonmark --cache-dir cache --benchmark Simple1Benchmark './deserializers/go/main StructuredSIOJSON $$FILENAME'
+
+go-unstructured-jsonparser: ./deserializers/go/main
+	jsonmark --cache-dir cache --benchmark Simple1Benchmark './deserializers/go/main UnstructuredJSONParser $$FILENAME'
+
 clean:
 	rm -rf deserializers/cpp/build
 	rm -rf deserializers/java/build
