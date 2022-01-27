@@ -26,7 +26,7 @@ def main():
 
     loads = DESERIALIZERS[serializer]
 
-    checksum = 1
+    checksum = 0
     for line in open(filename, 'rb'):
         data = loads(line)
         checksum += data['integer_1'] + data['integer_2']

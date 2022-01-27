@@ -1,11 +1,11 @@
 .EXPORT_ALL_VARIABLES:
 LOG_LEVEL = DEBUG
 
-python:
-	jsonmark --cache-dir cache --benchmark Simple1Benchmark 'python deserializers/python/main.py $$BENCHMARK $$FILENAME'
+python-orjson:
+	jsonmark --cache-dir cache --benchmark Simple1Benchmark 'python deserializers/python/main.py orjson $$BENCHMARK $$FILENAME'
 
 nodejs:
-	jsonmark --cache-dir cache --benchmark Simple1Benchmark 'node deserializers/nodejs/foo.js $$BENCHMARK $$FILENAME'
+	jsonmark --cache-dir cache --benchmark Simple1Benchmark 'node deserializers/nodejs/main.js $$BENCHMARK $$FILENAME'
 
 deserializers/java/build/libs/jsonmark-deserializer-all.jar: deserializers/java/src/main/java/im/tail/jsonmark/deserializer/App.java
 	cd deserializers/java && ./gradlew shadowJar

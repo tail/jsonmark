@@ -8,6 +8,12 @@ const rl = readline.createInterface({
     crlfDelay: Infinity,
 });
 
+let checksum = 0;
 rl.on('line', (line) => {
-    console.log(JSON.parse(line).integer_1);
+    const data = JSON.parse(line);
+    checksum += data.integer_1 + data.integer_2;
+});
+
+rl.on('close', () => {
+    console.log(checksum);
 });

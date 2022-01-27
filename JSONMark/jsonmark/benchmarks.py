@@ -42,7 +42,7 @@ class Simple1Benchmark(BaseBenchmark):
     version = 1
     seed = 42
     iterations = 1_000_000
-    expected_checksum = -969895  # sum of integer_1 and integer_2
+    expected_checksum = -969896  # sum of integer_1 and integer_2
     schema = lambda: {
         'integer_1': _('numbers.integer_number'),
         'integer_2': _('numbers.integer_number'),

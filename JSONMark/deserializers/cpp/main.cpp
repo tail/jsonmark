@@ -22,11 +22,13 @@ int main(int argc, char **argv) {
     size_t nread;
     size_t len;
     char *line = NULL;
+    int64_t checksum = 0;
     simdjson::dom::parser parser;
     while ((nread = getline(&line, &len, stream)) != -1) {
         auto [doc, error] = parser.parse(line, nread);
-        std::cout << doc["integer_1"] << std::endl;
+        checksum += int64_t(doc["integer_1"]) + int64_t(doc["integer_2"]);
     }
+    std::cout << checksum << std::endl;
 
     free(line);
     fclose(stream);
