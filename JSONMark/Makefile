@@ -22,13 +22,19 @@ rust: ./deserializers/rust/target/release/jsonmark-deserializer-rust
 export CC=clang
 export CXX=clang++
 ./deserializers/cpp/build: ./deserializers/cpp/meson.build
-	cd deserializers/cpp && meson build || meson --reconfigure build
+	cd deserializers/cpp && meson build --optimization=3 || meson --reconfigure build
 
 ./deserializers/cpp/build/main: ./deserializers/cpp/main.cpp ./deserializers/cpp/build
 	cd deserializers/cpp/build && ninja
 
-cpp: ./deserializers/cpp/build/main
-	jsonmark --cache-dir cache --benchmark Simple1Benchmark './deserializers/cpp/build/main $$BENCHMARK $$FILENAME'
+cpp-dom-getline: ./deserializers/cpp/build/main
+	jsonmark --cache-dir cache --benchmark Simple1Benchmark './deserializers/cpp/build/main dom_getline $$FILENAME'
+
+cpp-dom-load-many: ./deserializers/cpp/build/main
+	jsonmark --cache-dir cache --benchmark Simple1Benchmark './deserializers/cpp/build/main dom_load_many $$FILENAME'
+
+cpp-ondemand-load: ./deserializers/cpp/build/main
+	jsonmark --cache-dir cache --benchmark Simple1Benchmark './deserializers/cpp/build/main ondemand_load $$FILENAME'
 
 clean:
 	rm -rf deserializers/cpp/build

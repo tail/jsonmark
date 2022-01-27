@@ -42,9 +42,9 @@ def main(benchmark, serializer, cache_dir, only_serialize, deserializer_cmd):
     which will ensure that the output by the deserializer matches the expected
     values (TODO).
 
-    DESERIALIZER_CMD should be a string containing a command that takes two
-    arguments, the name of the benchmark marked by the placeholder "$BENCHMARK"
-    and the input filename marked by the placeholder "$FILENAME".  For example:
+    DESERIALIZER_CMD should be a string containing a command that takes an
+    argument, the input filename marked by the placeholder "$FILENAME".
+    For example:
 
         "python json_deser.py $BENCHMARK $FILENAME"
 
@@ -60,7 +60,7 @@ def main(benchmark, serializer, cache_dir, only_serialize, deserializer_cmd):
         )
 
     def verify_deserialize_cmd():
-        for placeholder in ('$BENCHMARK', '$FILENAME', ):
+        for placeholder in ('$FILENAME', ):
             if not only_serialize and placeholder not in deserializer_cmd:
                 raise click.BadArgumentUsage(f'DESERIALIZER_CMD missing placeholder: {placeholder}')
 
@@ -100,7 +100,7 @@ def main(benchmark, serializer, cache_dir, only_serialize, deserializer_cmd):
 
     def run_deserialize_benchmark():
         start_time = time.time()
-        cmd = deserializer_cmd.replace('$BENCHMARK', benchmark).replace('$FILENAME', serialized_filename)
+        cmd = deserializer_cmd.replace('$FILENAME', serialized_filename)
 
         proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
 
@@ -110,7 +110,12 @@ def main(benchmark, serializer, cache_dir, only_serialize, deserializer_cmd):
                 status.update(status="%.2fs" % (time.time() - start_time))
                 if proc.poll() is not None:
                     if proc.stdout:
-                        checksum  = int(proc.stdout.read().strip())
+                        data = proc.stdout.read().strip()
+                        try:
+                            checksum  = int(data)
+                        except ValueError:
+                            log.error('Expected checksum from output. Standard output to follow')
+                            log.error(data)
                     break
 
         # XXX: this is really slow for stdout from rust/java/c++... but no
