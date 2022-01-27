@@ -17,8 +17,7 @@ DESERIALIZERS = {
 
 def main():
     serializer = sys.argv[1]
-    benchmark = sys.argv[2]
-    filename = sys.argv[3]
+    filename = sys.argv[2]
 
     if serializer not in DESERIALIZERS:
         print(f"Unknown serializer: {serializer}")

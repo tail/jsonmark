@@ -2,7 +2,7 @@ const fs = require('fs');
 const process = require('process');
 const readline = require('readline');
 
-const stream = fs.createReadStream(process.argv[3]);
+const stream = fs.createReadStream(process.argv[2]);
 const rl = readline.createInterface({
     input: stream,
     crlfDelay: Infinity,

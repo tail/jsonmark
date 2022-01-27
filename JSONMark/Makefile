@@ -2,22 +2,22 @@
 LOG_LEVEL = DEBUG
 
 python-orjson:
-	jsonmark --cache-dir cache --benchmark Simple1Benchmark 'python deserializers/python/main.py orjson $$BENCHMARK $$FILENAME'
+	jsonmark --cache-dir cache --benchmark Simple1Benchmark 'python deserializers/python/main.py orjson $$FILENAME'
 
 nodejs:
-	jsonmark --cache-dir cache --benchmark Simple1Benchmark 'node deserializers/nodejs/main.js $$BENCHMARK $$FILENAME'
+	jsonmark --cache-dir cache --benchmark Simple1Benchmark 'node deserializers/nodejs/main.js $$FILENAME'
 
 deserializers/java/build/libs/jsonmark-deserializer-all.jar: deserializers/java/src/main/java/im/tail/jsonmark/deserializer/App.java
 	cd deserializers/java && ./gradlew shadowJar
 
 java: deserializers/java/build/libs/jsonmark-deserializer-all.jar
-	jsonmark --cache-dir cache --benchmark Simple1Benchmark 'java -jar deserializers/java/build/libs/jsonmark-deserializer-all.jar $$BENCHMARK $$FILENAME'
+	jsonmark --cache-dir cache --benchmark Simple1Benchmark 'java -jar deserializers/java/build/libs/jsonmark-deserializer-all.jar $$FILENAME'
 
 ./deserializers/rust/target/release/jsonmark-deserializer-rust: deserializers/rust/main.rs
 	cd deserializers/rust && cargo build --release
 
 rust: ./deserializers/rust/target/release/jsonmark-deserializer-rust
-	jsonmark --cache-dir cache --benchmark Simple1Benchmark './deserializers/rust/target/release/jsonmark-deserializer-rust $$BENCHMARK $$FILENAME'
+	jsonmark --cache-dir cache --benchmark Simple1Benchmark './deserializers/rust/target/release/jsonmark-deserializer-rust $$FILENAME'
 
 export CC=clang
 export CXX=clang++

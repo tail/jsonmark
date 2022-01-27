@@ -7,7 +7,7 @@ use simd_json::Value;
 fn main() -> io::Result<()>{
     let args: Vec<String> = env::args().collect();
 
-    let _file = File::open(&args[2])?;
+    let _file = File::open(&args[1])?;
     let reader = BufReader::new(_file);
 
     let mut checksum = 0;
