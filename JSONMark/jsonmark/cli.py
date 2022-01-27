@@ -7,6 +7,7 @@ import tempfile
 import time
 
 import click
+import numpy as np
 import orjson
 import rapidjson
 import tqdm
@@ -33,8 +34,9 @@ console = Console()
 @click.option('--serializer', type=click.Choice(SERIALIZERS.keys()), default='json')
 @click.option('--cache-dir', help='cache directory for serialized file')
 @click.option('--only-serialize', is_flag=True, default=False, help='exit after serializing without running DESERIALIZER_CMD')
+@click.option('--profile', is_flag=True, default=False, help='profile memory/cpu usage')
 @click.argument('deserializer_cmd')
-def main(benchmark, serializer, cache_dir, only_serialize, deserializer_cmd):
+def main(benchmark, serializer, cache_dir, only_serialize, profile, deserializer_cmd):
     """
     Runs a benchmark against a specific deserializer by serializing generated
     data with a schema defined by `--benchmark` and a serializer specified by
@@ -46,12 +48,16 @@ def main(benchmark, serializer, cache_dir, only_serialize, deserializer_cmd):
     argument, the input filename marked by the placeholder "$FILENAME".
     For example:
 
-        "python json_deser.py $BENCHMARK $FILENAME"
+        "python json_deser.py $FILENAME"
 
     """
     benchmark_cls = ALL_BENCHMARKS[benchmark]
     schema = Schema(schema=benchmark_cls.schema)
     serializer_cls = SERIALIZERS[serializer]
+    profile_filename = ''
+    if profile:
+        profile_filename = tempfile.mkstemp()[1]
+        atexit.register(os.remove, profile_filename)
 
     def setup_logging():
         logging.basicConfig(
@@ -69,6 +75,7 @@ def main(benchmark, serializer, cache_dir, only_serialize, deserializer_cmd):
         log.info('Using library for serialization: %s', serializer)
         if cache_dir:
             log.info('Using cache directory: %s', cache_dir)
+            os.makedirs(cache_dir, exist_ok=True)
 
     def get_serialized_filename() -> str:
         if not cache_dir:
@@ -81,7 +88,7 @@ def main(benchmark, serializer, cache_dir, only_serialize, deserializer_cmd):
 
         return serialized_filename
 
-    def generate_serialized_file():
+    def generate_serialized_file(serialized_filename: str):
         if not os.path.exists(serialized_filename) or not os.path.getsize(serialized_filename):
             log.info('Writing serialized file to: %s', serialized_filename)
             start_time = time.time()
@@ -101,6 +108,8 @@ def main(benchmark, serializer, cache_dir, only_serialize, deserializer_cmd):
     def run_deserialize_benchmark():
         start_time = time.time()
         cmd = deserializer_cmd.replace('$FILENAME', serialized_filename)
+        if profile:
+            cmd = f"psrecord --log {profile_filename} --include-children '{cmd}'"
 
         proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
 
@@ -112,7 +121,9 @@ def main(benchmark, serializer, cache_dir, only_serialize, deserializer_cmd):
                     if proc.stdout:
                         data = proc.stdout.read().strip()
                         try:
-                            checksum  = int(data)
+                            if profile:
+                                data = data.split()[0]
+                            checksum = int(data)
                         except ValueError:
                             log.error('Expected checksum from output. Standard output to follow')
                             log.error(data)
@@ -143,13 +154,21 @@ def main(benchmark, serializer, cache_dir, only_serialize, deserializer_cmd):
             10 * benchmark_cls.iterations / (time.time() - start_time),
         )
 
+    def parse_profile():
+        cpu, mem = np.loadtxt(profile_filename, skiprows=1, usecols=(1, 2), unpack=True)
+        log.info("CPU (%%)  : max=%.2f  50%%=%.2f  95%%=%.2f", np.max(cpu), np.median(cpu), np.quantile(cpu, 0.95))
+        log.info("MEM (MiB): max=%.2f  50%%=%.2f  95%%=%.2f", np.median(mem), np.max(mem), np.quantile(mem, 0.95))
+
     setup_logging()
     verify_deserialize_cmd()
     print_preamble()
     serialized_filename = get_serialized_filename()
-    generate_serialized_file()
+    generate_serialized_file(serialized_filename)
 
     if only_serialize:
         raise SystemExit()
 
     run_deserialize_benchmark()
+
+    if profile:
+        parse_profile()

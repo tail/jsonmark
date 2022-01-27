@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Any, Callable, Dict
 
 from mimesis.schema import Field
 
@@ -20,15 +20,15 @@ class BenchmarkMeta(type):
                 if key not in dct:
                     raise NotImplementedError(f'Benchmark missing key: {key}')
 
-            ALL_BENCHMARKS[name] = new_cls
+            ALL_BENCHMARKS[name] = new_cls  # type: ignore
         return new_cls
 
 
 class BaseBenchmark(metaclass=BenchmarkMeta):
-    # XXX: this is so auto-completion works
-    version = None
-    iteration = None
-    schema = None
+    version: int
+    iterations: int
+    schema: Callable[[], Dict[str, Any]]
+    expected_checksum: int
 
     @classmethod
     def cache_filename(cls, serializer):
