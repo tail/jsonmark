@@ -104,3 +104,6 @@ Observations:
 |go-unstructured-siojson   |           7.16|  7.15|  7.15|    7.15|           128.42|          9.55|327.98|
 |go-structured-siojson     |           2.13|  2.08|  2.03|    2.08|           110.70|          8.94| 95.41|
 |go-unstructured-jsonparser|           0.36|  0.34|  0.32|    0.34|             0.00|          7.78| 15.60|
+|go-unstructured-ast-sonic |           2.53|  2.51|  2.56|    2.53|           134.11|         15.06|119.34|
+|go-unstructured-map-sonic |           4.30|  4.25|  4.21|    4.25|           157.97|         20.62|200.47|
+|go-structured-sonic       |           1.86|  1.85|  1.86|    1.86|           137.72|         23.09| 87.74|

@@ -67,6 +67,15 @@ go-structured-siojson: ./deserializers/go/main
 go-unstructured-jsonparser: ./deserializers/go/main
 	$(JSONMARK_COMMAND) './deserializers/go/main UnstructuredJSONParser $$FILENAME'
 
+go-unstructured-ast-sonic: ./deserializers/go/main
+	$(JSONMARK_COMMAND) './deserializers/go/main UnstructuredASTSonic $$FILENAME'
+
+go-unstructured-map-sonic: ./deserializers/go/main
+	$(JSONMARK_COMMAND) './deserializers/go/main UnstructuredMapSonic $$FILENAME'
+
+go-structured-sonic: ./deserializers/go/main
+	$(JSONMARK_COMMAND) './deserializers/go/main StructuredSonic $$FILENAME'
+
 clean:
 	rm -rf deserializers/cpp/build
 	rm -rf deserializers/java/build

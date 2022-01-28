@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/buger/jsonparser"
+	"github.com/bytedance/sonic"
 	"github.com/minio/simdjson-go"
 	siojson "github.com/segmentio/encoding/json"
 )
@@ -40,6 +41,10 @@ var Benchmarks = map[string]BenchmarkFunc{
 	"UnstructuredJSONParser": UnstructuredJSONParser,
 
 	"UnstructuredSIMDJSONParser": UnstructuredSIMDJSONParser,
+
+	"UnstructuredASTSonic": UnstructuredASTSonic,
+	"UnstructuredMapSonic": UnstructuredMapSonic,
+	"StructuredSonic":      StructuredSonic,
 }
 
 func main() {
@@ -167,4 +172,39 @@ func UnstructuredSIMDJSONParser(data []byte) int {
 	})
 
 	return int(int1 + int2)
+}
+
+func UnstructuredASTSonic(data []byte) int {
+	root, err := sonic.GetFromString(string(data))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	int1, err := root.Get("integer_1").Int64()
+	if err != nil {
+		log.Fatal(err)
+	}
+	int2, err := root.Get("integer_2").Int64()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return int(int1 + int2)
+}
+
+func UnstructuredMapSonic(data []byte) int {
+	var result map[string]interface{}
+	err := sonic.Unmarshal(data, &result)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return int(result["integer_1"].(float64) + result["integer_2"].(float64))
+}
+
+func StructuredSonic(data []byte) int {
+	var result Simple
+	err := sonic.Unmarshal(data, &result)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return result.Integer1 + result.Integer2
 }

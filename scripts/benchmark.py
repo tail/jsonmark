@@ -36,6 +36,9 @@ BENCHMARKS = [
     "go-unstructured-siojson",
     "go-structured-siojson",
     "go-unstructured-jsonparser",
+    "go-unstructured-ast-sonic",
+    "go-unstructured-map-sonic",
+    "go-structured-sonic",
 ]
 
 
